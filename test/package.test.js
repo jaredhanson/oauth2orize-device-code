@@ -6,8 +6,9 @@ var expect = require('chai').expect;
 
 describe('oauth2orize-device-code', function() {
   
-  it('should export hello world', function() {
-    expect(pkg.hello).to.equal('world');
+  it('should export exchanges', function() {
+    expect(pkg.exchange).to.be.an('object');
+    expect(pkg.exchange.deviceCode).to.be.a('function');
   });
   
 });
