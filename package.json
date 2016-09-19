@@ -1,0 +1,32 @@
+{
+  "name": "oauth2orize-device-code",
+  "version": "0.0.0",
+  "description": "TODO",
+  "author": {
+    "name": "Jared Hanson",
+    "email": "jaredhanson@gmail.com",
+    "url": "http://www.jaredhanson.net/"
+  },
+  "repository": {    "type": "git",
+    "url": "git://github.com/jaredhanson/oauth2orize-device-code.git"
+  },
+  "bugs": {
+    "url": "http://github.com/jaredhanson/oauth2orize-device-code/issues"
+  },
+  "license": "MIT",
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "http://opensource.org/licenses/MIT"
+    }
+  ],
+  "main": "./lib",
+  "devDependencies": {
+    "make-node": "^0.3.0",
+    "mocha": "^2.0.0",
+    "chai": "^3.0.0"
+  },
+  "scripts": {
+    "test": "node_modules/.bin/mocha test/*.test.js"
+  }
+}
