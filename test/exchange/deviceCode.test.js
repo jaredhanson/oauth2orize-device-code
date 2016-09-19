@@ -1,11 +1,11 @@
 var chai = require('chai')
-  , authorizationCode = require('../../lib/exchange/deviceCode');
+  , deviceCode = require('../../lib/exchange/deviceCode');
 
 
 describe('exchange.deviceCode', function() {
   
   it('should be named device_code', function() {
-    expect(authorizationCode(function(){}).name).to.equal('device_code');
+    expect(deviceCode(function(){}).name).to.equal('device_code');
   });
   
   describe('issuing an access token', function() {
@@ -18,7 +18,7 @@ describe('exchange.deviceCode', function() {
         return done(null, '2YotnFZFEjr1zCsicMWpAA');
       }
       
-      chai.connect.use(authorizationCode(issue))
+      chai.connect.use(deviceCode(issue))
         .req(function(req) {
           req.user = { id: '459691054427', name: 'Example' };
           req.body = { device_code: 'pxDoJ3Bt9WVMTXfDATLkxJ9u' };
@@ -56,7 +56,7 @@ describe('exchange.deviceCode', function() {
         return done(null, '2YotnFZFEjr1zCsicMWpAA', 'tGzv3JOkF0XG5Qx2TlKWIA');
       }
       
-      chai.connect.use(authorizationCode(issue))
+      chai.connect.use(deviceCode(issue))
         .req(function(req) {
           req.user = { id: '459691054427', name: 'Example' };
           req.body = { device_code: 'pxDoJ3Bt9WVMTXfDATLkxJ9u' };
