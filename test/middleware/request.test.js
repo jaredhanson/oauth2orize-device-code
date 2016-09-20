@@ -4,8 +4,8 @@ var chai = require('chai')
 
 describe('middleware.request', function() {
   
-  it('should be named device_authoriation_request', function() {
-    expect(deviceAuthorizationRequest(function(){}).name).to.equal('device_authoriation_request');
+  it('should be named device_authorization_request', function() {
+    expect(deviceAuthorizationRequest(function(){}).name).to.equal('device_authorization_request');
   });
   
   describe('issuing a device code', function() {
