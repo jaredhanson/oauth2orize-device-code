@@ -1,7 +1,13 @@
 {
   "name": "oauth2orize-device-code",
   "version": "0.0.0",
-  "description": "TODO",
+  "description": "Extensions to support device flow with OAuth2orize.",
+  "keywords": [
+    "oauth",
+    "oauth2",
+    "device",
+    "iot"
+  ],
   "author": {
     "name": "Jared Hanson",
     "email": "jaredhanson@gmail.com",
