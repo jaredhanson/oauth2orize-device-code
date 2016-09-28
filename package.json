@@ -1,6 +1,6 @@
 {
   "name": "oauth2orize-device-code",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Extensions to support device flow with OAuth2orize.",
   "keywords": [
     "oauth",
