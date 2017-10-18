@@ -29,6 +29,7 @@
   ],
   "main": "./lib",
   "dependencies": {
+    "chai-oauth2orize-grant": "^0.3.0",
     "utils-merge": "^1.0.0"
   },
   "devDependencies": {
