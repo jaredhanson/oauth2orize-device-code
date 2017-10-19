@@ -177,6 +177,45 @@ describe('grant.activate', function() {
       });
     });
 
+    describe('transaction when passed to activate callback', function() {
+      var response;
+      
+      before(function(done) {
+        function activate(deviceCode, txn, done) {
+          if (txn.client.id !== 'c123') { return done(new Error('incorrect txn argument')); }
+          if (txn.user.id !== 'u123') { return done(new Error('incorrect txn argument')); }
+          if (deviceCode !== 'dc123') { return done(new Error('incorrect deviceCode argument')); }
+          
+          return done(null);
+        }
+        
+        function inform(txn, res, params) {
+          res.end('User ' + txn.user.name + ' has authorized client ' + txn.client.name + '.');
+        }
+        
+        chai.oauth2orize.grant(activation({ inform: inform }, activate))
+          .txn(function(txn) {
+            txn.client = { id: 'c123', name: 'Example' };
+            txn.req = {
+              clientID:   'c123',
+              deviceCode: 'dc123'
+            };
+            txn.user = { id: 'u123', name: 'Bob' };
+            txn.res = { allow: true };
+          })
+          .end(function(res) {
+            response = res;
+            done();
+          })
+          .decide();
+      });
+      
+      it('should respond', function() {
+        expect(response.statusCode).to.equal(200);
+        expect(response.body).to.equal('User Bob has authorized client Example.');
+      });
+    });
+
     describe('transaction with complete callback', function() {
       var response, completed;
       
