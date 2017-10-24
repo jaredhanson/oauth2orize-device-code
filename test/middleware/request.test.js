@@ -15,13 +15,13 @@ describe('middleware.request', function() {
       function issue(client, scope, done) {
         if (client.id !== 's6BhdRkqt3') { return done(new Error('incorrect client argument')); }
         if (scope !== undefined) { return done(new Error('incorrect code argument')); }
-        return done(null, '74tq5miHKB', '94248', 'http://www.example.com/device');
+        return done(null, '74tq5miHKB', '94248');
       }
       
-      chai.connect.use(deviceAuthorizationRequest(issue))
+      chai.connect.use(deviceAuthorizationRequest({ verificationURI: 'http://www.example.com/device'}, issue))
         .req(function(req) {
           req.user = { id: 's6BhdRkqt3', name: 'Example' };
-          req.body = { response_type: 'device_code' };
+          req.body = {};
         })
         .end(function(res) {
           response = res;
@@ -52,13 +52,13 @@ describe('middleware.request', function() {
       function issue(client, scope, done) {
         if (client.id !== 's6BhdRkqt3') { return done(new Error('incorrect client argument')); }
         if (scope !== undefined) { return done(new Error('incorrect code argument')); }
-        return done(null, '74tq5miHKB', '94248', 'http://www.example.com/device', { interval: 5 });
+        return done(null, '74tq5miHKB', '94248', { interval: 5 });
       }
       
-      chai.connect.use(deviceAuthorizationRequest(issue))
+      chai.connect.use(deviceAuthorizationRequest({ verificationURI: 'http://www.example.com/device'}, issue))
         .req(function(req) {
           req.user = { id: 's6BhdRkqt3', name: 'Example' };
-          req.body = { response_type: 'device_code' };
+          req.body = {};
         })
         .end(function(res) {
           response = res;
