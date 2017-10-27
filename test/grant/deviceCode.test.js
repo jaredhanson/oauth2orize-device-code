@@ -1,5 +1,5 @@
 var chai = require('chai')
-  , activation = require('../../lib/grant/activate')
+  , activation = require('../../lib/grant/deviceCode')
   , AuthorizationError = require('../../lib/errors/authorizationerror');
 
 describe('grant.activate', function() {
