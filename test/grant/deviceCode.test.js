@@ -1,11 +1,11 @@
 var chai = require('chai')
-  , activation = require('../../lib/grant/deviceCode')
+  , deviceCode = require('../../lib/grant/deviceCode')
   , AuthorizationError = require('../../lib/errors/authorizationerror');
 
 describe('grant.device_code', function() {
   
   describe('module', function() {
-    var mod = activation(function(){});
+    var mod = deviceCode(function(){});
     
     it('should be named device_code', function() {
       expect(mod.name).to.equal('device_code');
@@ -19,18 +19,20 @@ describe('grant.device_code', function() {
   
   it('should throw if constructed without an activate callback', function() {
     expect(function() {
-      activation();
+      deviceCode();
     }).to.throw(TypeError, 'oauth2orize.device.activate grant requires an activate callback');
   });
 
   describe('decision handling', function() {
     
-    describe('transaction', function() {
+    describe('activating device code', function() {
       var response;
       
       before(function(done) {
-        function activate(deviceCode, done) {
-          if (deviceCode !== 'dc123') { return done(new Error('incorrect deviceCode argument')); }
+        function activate(client, deviceCode, user, done) {
+          if (client.id !== '1') { return done(new Error('incorrect client argument')); }
+          if (deviceCode !== 'GMMhmHCXhWEzkobqIHGG_EnNYYsAkukHspeYUk9E8') { return done(new Error('incorrect deviceCode argument')); }
+          if (user.id !== '501') { return done(new Error('incorrect user argument')); }
           
           return done(null);
         }
@@ -39,15 +41,22 @@ describe('grant.device_code', function() {
           res.end('User ' + txn.user.name + ' has authorized client ' + txn.client.name + '.');
         }
         
-        chai.oauth2orize.grant(activation({ inform: inform }, activate))
+        chai.oauth2orize.grant(deviceCode(activate))
           .txn(function(txn) {
-            txn.client = { id: 'c123', name: 'Example' };
+            txn.client = { id: '1', name: 'OAuth Client' };
             txn.req = {
-              clientID:   'c123',
-              deviceCode: 'dc123'
+              scope: [ 'profile', 'tv' ]
             };
-            txn.user = { id: 'u123', name: 'Bob' };
+            txn.deviceCode = 'GMMhmHCXhWEzkobqIHGG_EnNYYsAkukHspeYUk9E8';
+            txn.user = { id: '501', name: 'John Doe' };
             txn.res = { allow: true };
+          })
+          .res(function(res) {
+            res.locals = {};
+            res.render = function(view) {
+              this.view = view;
+              this.end();
+            }
           })
           .end(function(res) {
             response = res;
@@ -56,11 +65,13 @@ describe('grant.device_code', function() {
           .decide();
       });
       
-      it('should respond', function() {
+      it('should render', function() {
         expect(response.statusCode).to.equal(200);
-        expect(response.body).to.equal('User Bob has authorized client Example.');
+        expect(response.view).to.equal('oauth2/device/allowed');
+        expect(response.locals.user).to.deep.equal({ id: '501', name: 'John Doe' });
+        expect(response.locals.client).to.deep.equal({ id: '1', name: 'OAuth Client' });
       });
-    });
+    }); // activating device code
 
     describe('transaction when passed to activate callback', function() {
       var response;
@@ -78,7 +89,7 @@ describe('grant.device_code', function() {
           res.end('User ' + txn.user.name + ' has authorized client ' + txn.client.name + '.');
         }
         
-        chai.oauth2orize.grant(activation({ inform: inform }, activate))
+        chai.oauth2orize.grant(deviceCode({ inform: inform }, activate))
           .txn(function(txn) {
             txn.client = { id: 'c123', name: 'Example' };
             txn.req = {
@@ -115,7 +126,7 @@ describe('grant.device_code', function() {
           res.end('User ' + txn.user.name + ' has authorized client ' + txn.client.name + '.');
         }
         
-        chai.oauth2orize.grant(activation({ inform: inform }, activate))
+        chai.oauth2orize.grant(deviceCode({ inform: inform }, activate))
           .txn(function(txn) {
             txn.client = { id: 'c123', name: 'Example' };
             txn.req = {
@@ -155,7 +166,7 @@ describe('grant.device_code', function() {
           return done(null);
         }
         
-        chai.oauth2orize.grant(activation(activate))
+        chai.oauth2orize.grant(deviceCode(activate))
           .txn(function(txn) {
             txn.client = { id: 'c123', name: 'Example' };
             txn.req = {
@@ -185,7 +196,7 @@ describe('grant.device_code', function() {
           return done(new Error('something went wrong'));
         }
         
-        chai.oauth2orize.grant(activation(activate))
+        chai.oauth2orize.grant(deviceCode(activate))
           .txn(function(txn) {
             txn.client = { id: 'cERROR', name: 'Example' };
             txn.req = {
@@ -216,7 +227,7 @@ describe('grant.device_code', function() {
           throw new Error('something was thrown');
         }
         
-        chai.oauth2orize.grant(activation(activate))
+        chai.oauth2orize.grant(deviceCode(activate))
           .txn(function(txn) {
             txn.client = { id: 'cTHROW', name: 'Example' };
             txn.req = {
@@ -252,7 +263,7 @@ describe('grant.device_code', function() {
           res.end('code: ' + params.error + ', message: ' + params.error_description);
         }
         
-        chai.oauth2orize.grant(activation({ inform: inform }, activate))
+        chai.oauth2orize.grant(deviceCode({ inform: inform }, activate))
           .txn(function(txn) {
             txn.client = { id: 'c123', name: 'Example' };
             txn.req = {
@@ -280,7 +291,7 @@ describe('grant.device_code', function() {
       before(function(done) {
         function activate(deviceCode, done) {}
         
-        chai.oauth2orize.grant(activation(activate))
+        chai.oauth2orize.grant(deviceCode(activate))
           .txn(function(txn) {
             txn.client = { id: 'c123', name: 'Example' };
             txn.req = {
