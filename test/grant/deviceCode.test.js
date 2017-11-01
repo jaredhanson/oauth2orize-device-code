@@ -37,10 +37,6 @@ describe('grant.device_code', function() {
           return done(null);
         }
         
-        function inform(txn, res, params) {
-          res.end('User ' + txn.user.name + ' has authorized client ' + txn.client.name + '.');
-        }
-        
         chai.oauth2orize.grant(deviceCode(activate))
           .txn(function(txn) {
             txn.client = { id: '1', name: 'OAuth Client' };
@@ -73,31 +69,35 @@ describe('grant.device_code', function() {
       });
     }); // activating device code
 
-    describe('transaction when passed to activate callback', function() {
+    describe('activating device code based on response', function() {
       var response;
       
       before(function(done) {
-        function activate(deviceCode, txn, done) {
-          if (txn.client.id !== 'c123') { return done(new Error('incorrect txn argument')); }
-          if (txn.user.id !== 'u123') { return done(new Error('incorrect txn argument')); }
-          if (deviceCode !== 'dc123') { return done(new Error('incorrect deviceCode argument')); }
+        function activate(client, deviceCode, user, ares, done) {
+          if (client.id !== '1') { return done(new Error('incorrect client argument')); }
+          if (deviceCode !== 'GMMhmHCXhWEzkobqIHGG_EnNYYsAkukHspeYUk9E8') { return done(new Error('incorrect deviceCode argument')); }
+          if (user.id !== '501') { return done(new Error('incorrect user argument')); }
+          if (ares.scope[0] !== 'tv') { return done(new Error('incorrect ares argument')); }
           
           return done(null);
         }
         
-        function inform(txn, res, params) {
-          res.end('User ' + txn.user.name + ' has authorized client ' + txn.client.name + '.');
-        }
-        
-        chai.oauth2orize.grant(deviceCode({ inform: inform }, activate))
+        chai.oauth2orize.grant(deviceCode(activate))
           .txn(function(txn) {
-            txn.client = { id: 'c123', name: 'Example' };
+            txn.client = { id: '1', name: 'OAuth Client' };
             txn.req = {
-              clientID:   'c123',
-              deviceCode: 'dc123'
+              scope: [ 'profile', 'tv' ]
             };
-            txn.user = { id: 'u123', name: 'Bob' };
-            txn.res = { allow: true };
+            txn.deviceCode = 'GMMhmHCXhWEzkobqIHGG_EnNYYsAkukHspeYUk9E8';
+            txn.user = { id: '501', name: 'John Doe' };
+            txn.res = { allow: true, scope: [ 'tv' ] };
+          })
+          .res(function(res) {
+            res.locals = {};
+            res.render = function(view) {
+              this.view = view;
+              this.end();
+            }
           })
           .end(function(res) {
             response = res;
@@ -106,11 +106,13 @@ describe('grant.device_code', function() {
           .decide();
       });
       
-      it('should respond', function() {
+      it('should render', function() {
         expect(response.statusCode).to.equal(200);
-        expect(response.body).to.equal('User Bob has authorized client Example.');
+        expect(response.view).to.equal('oauth2/device/allowed');
+        expect(response.locals.user).to.deep.equal({ id: '501', name: 'John Doe' });
+        expect(response.locals.client).to.deep.equal({ id: '1', name: 'OAuth Client' });
       });
-    });
+    }); // activating device code based on response
 
     describe('transaction with complete callback', function() {
       var response, completed;
