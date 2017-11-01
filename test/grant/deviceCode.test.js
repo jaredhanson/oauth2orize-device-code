@@ -394,6 +394,93 @@ describe('grant.device_code', function() {
       });
     }); // encountering an error while completing transaction
   
+    describe('with response mode', function() {
+      function activate(client, deviceCode, user, done) {
+        return done(null);
+      }
+      
+      var otherResponseMode = function(txn, res, params) {
+        expect(txn.deviceCode).to.equal('GMMhmHCXhWEzkobqIHGG_EnNYYsAkukHspeYUk9E8');
+        res.render('other/activate');
+      }
+      
+      
+      describe('activating device code using default response mode', function() {
+        var response;
+      
+        before(function(done) {
+          chai.oauth2orize.grant(deviceCode({ modes: { other: otherResponseMode } }, activate))
+            .txn(function(txn) {
+              txn.client = { id: '1', name: 'OAuth Client' };
+              txn.req = {
+                scope: [ 'profile', 'tv' ]
+              };
+              txn.deviceCode = 'GMMhmHCXhWEzkobqIHGG_EnNYYsAkukHspeYUk9E8';
+              txn.user = { id: '501', name: 'John Doe' };
+              txn.res = { allow: true };
+            })
+            .res(function(res) {
+              res.locals = {};
+              res.render = function(view) {
+                this.view = view;
+                this.end();
+              }
+            })
+            .end(function(res) {
+              response = res;
+              done();
+            })
+            .decide();
+        });
+      
+        it('should render', function() {
+          expect(response.statusCode).to.equal(200);
+          expect(response.view).to.equal('oauth2/device/allowed');
+          expect(response.locals.user).to.deep.equal({ id: '501', name: 'John Doe' });
+          expect(response.locals.client).to.deep.equal({ id: '1', name: 'OAuth Client' });
+        });
+      }); // activating device code using default response mode
+      
+      describe('activating device code using other response mode', function() {
+        var response;
+      
+        before(function(done) {
+          chai.oauth2orize.grant(deviceCode({ modes: { other: otherResponseMode } }, activate))
+            .txn(function(txn) {
+              txn.client = { id: '1', name: 'OAuth Client' };
+              txn.req = {
+                scope: [ 'profile', 'tv' ]
+              };
+              txn.deviceCode = 'GMMhmHCXhWEzkobqIHGG_EnNYYsAkukHspeYUk9E8';
+              txn.mode = 'other';
+              txn.user = { id: '501', name: 'John Doe' };
+              txn.res = { allow: true };
+            })
+            .res(function(res) {
+              res.locals = {};
+              res.render = function(view) {
+                this.view = view;
+                this.end();
+              }
+            })
+            .end(function(res) {
+              response = res;
+              done();
+            })
+            .next(function(err) {
+              console.log(err);
+            })
+            .decide();
+        });
+      
+        it('should render', function() {
+          expect(response.statusCode).to.equal(200);
+          expect(response.view).to.equal('other/activate');
+        });
+      }); // activating device code using other response mode
+      
+    }); // with response mode
+  
   }); // decision processing
 
   describe('error handling', function() {
