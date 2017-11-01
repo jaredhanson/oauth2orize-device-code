@@ -384,5 +384,46 @@ describe.only('exchange.device_code', function() {
     });
   }); // encountering an exception while issuing an access token
   
+  describe('options', function() {
+    
+    describe('userProperty', function() {
+      
+      describe('issuing an access token', function() {
+        var response, err;
+
+        before(function(done) {
+          function issue(client, deviceCode, done) {
+            if (client.id !== '459691054427') { return done(new Error('incorrect client argument')); }
+            if (deviceCode !== 'GMMhmHCXhWEzkobqIHGG_EnNYYsAkukHspeYUk9E8') { return done(new Error('incorrect code argument')); }
+            return done(null, '2YotnFZFEjr1zCsicMWpAA');
+          }
+      
+          chai.connect.use(deviceCode({ userProperty: 'client' }, issue))
+            .req(function(req) {
+              req.client = { id: '459691054427', name: 'Example' };
+              req.body = { device_code: 'GMMhmHCXhWEzkobqIHGG_EnNYYsAkukHspeYUk9E8' };
+            })
+            .end(function(res) {
+              response = res;
+              done();
+            })
+            .dispatch();
+        });
+    
+        it('should respond with headers', function() {
+          expect(response.getHeader('Content-Type')).to.equal('application/json');
+          expect(response.getHeader('Cache-Control')).to.equal('no-store');
+          expect(response.getHeader('Pragma')).to.equal('no-cache');
+        });
+    
+        it('should respond with body', function() {
+          expect(response.body).to.equal('{"access_token":"2YotnFZFEjr1zCsicMWpAA","token_type":"Bearer"}');
+        });
+      }); // issuing an access token
+      
+    }); // userProperty
+    
+  }); // options
+  
 })
 
