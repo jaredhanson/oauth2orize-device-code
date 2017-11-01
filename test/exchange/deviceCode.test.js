@@ -2,7 +2,7 @@ var chai = require('chai')
   , deviceCode = require('../../lib/exchange/deviceCode');
 
 
-describe.only('exchange.device_code', function() {
+describe('exchange.device_code', function() {
   
   it('should be named device_code', function() {
     expect(deviceCode(function(){}).name).to.equal('device_code');

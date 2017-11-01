@@ -2,17 +2,17 @@ var chai = require('chai')
   , activation = require('../../lib/grant/deviceCode')
   , AuthorizationError = require('../../lib/errors/authorizationerror');
 
-describe('grant.activate', function() {
+describe('grant.device_code', function() {
   
   describe('module', function() {
     var mod = activation(function(){});
     
-    it('should be named activate', function() {
-      expect(mod.name).to.equal('activate');
+    it('should be named device_code', function() {
+      expect(mod.name).to.equal('device_code');
     });
     
     it('should expose request and response functions', function() {
-      expect(mod.request).to.be.a('function');
+      expect(mod.request).to.be.undefined;
       expect(mod.response).to.be.a('function');
     });
   });
@@ -21,121 +21,6 @@ describe('grant.activate', function() {
     expect(function() {
       activation();
     }).to.throw(TypeError, 'oauth2orize.device.activate grant requires an activate callback');
-  });
-
-  describe('request parsing', function() {
-    function issue(){}
-    
-    describe('request', function() {
-      var err, out;
-      
-      before(function(done) {
-        chai.oauth2orize.grant(activation(issue))
-          .req(function(req) {
-            req.user_code = {};
-            req.user_code.client_id   = 'c123';
-            req.user_code.scope       = [ 'read' ];
-            req.user_code.device_code = 'dc123';
-          })
-          .parse(function(e, o) {
-            err = e;
-            out = o;
-            done();
-          })
-          .authorize();
-      });
-      
-      it('should not error', function() {
-        expect(err).to.be.null;
-      });
-      
-      it('should parse request', function() {
-        expect(out.clientID).to.equal('c123');
-        expect(out.scope).to.be.an('array');
-        expect(out.scope).to.have.length(1);
-        expect(out.scope[0]).to.equal('read');
-        expect(out.deviceCode).to.equal('dc123');
-      });
-    });
-     
-    describe('request with missing client_id parameter', function() {
-      var err, out;
-      
-      before(function(done) {
-        chai.oauth2orize.grant(activation(issue))
-          .req(function(req) {
-            req.user_code = {};
-            req.user_code.scope       = [ 'read' ];
-            req.user_code.device_code = 'dc123';
-          })
-          .parse(function(e, o) {
-            err = e;
-            out = o;
-            done();
-          })
-          .authorize();
-      });
-      
-      it('should error', function() {
-        expect(err).to.be.an.instanceOf(Error);
-        expect(err.constructor.name).to.equal('AuthorizationError');
-        expect(err.message).to.equal('Missing required parameter: client_id');
-        expect(err.code).to.equal('invalid_request');
-      });
-    });
-
-    describe('request with invalid client_id parameter', function() {
-      var err, out;
-      
-      before(function(done) {
-        chai.oauth2orize.grant(activation(issue))
-          .req(function(req) {
-            req.user_code = {};
-            req.user_code.client_id   = ['c123', 'c123'];
-            req.user_code.scope       = [ 'read' ];
-            req.user_code.device_code = 'dc123';
-          })
-          .parse(function(e, o) {
-            err = e;
-            out = o;
-            done();
-          })
-          .authorize();
-      });
-      
-      it('should error', function() {
-        expect(err).to.be.an.instanceOf(Error);
-        expect(err.constructor.name).to.equal('AuthorizationError');
-        expect(err.message).to.equal('Invalid parameter: client_id must be a string');
-        expect(err.code).to.equal('invalid_request');
-      });
-    });
-    
-    describe('request with missing device_code parameter', function() {
-      var err, out;
-      
-      before(function(done) {
-        chai.oauth2orize.grant(activation(issue))
-          .req(function(req) {
-            req.user_code = {};
-            req.user_code.client_id = 'c123';
-            req.user_code.scope     = [ 'read' ];
-          })
-          .parse(function(e, o) {
-            err = e;
-            out = o;
-            done();
-          })
-          .authorize();
-      });
-      
-      it('should error', function() {
-        expect(err).to.be.an.instanceOf(Error);
-        expect(err.constructor.name).to.equal('AuthorizationError');
-        expect(err.message).to.equal('Missing required parameter: device_code');
-        expect(err.code).to.equal('invalid_request');
-      });
-    });
   });
 
   describe('decision handling', function() {
