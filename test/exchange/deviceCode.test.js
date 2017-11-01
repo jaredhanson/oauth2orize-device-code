@@ -253,7 +253,7 @@ describe.only('exchange.device_code', function() {
     var response, err;
 
     before(function(done) {
-      function issue(client, deviceCode, body, authInfo, done) {
+      function issue(client, deviceCode, done) {
         return done(null, false);
       }
       
@@ -277,6 +277,112 @@ describe.only('exchange.device_code', function() {
       expect(err.status).to.equal(403);
     });
   }); // not issuing an access token
+  
+  describe('handling a request in which body has not been parsed', function() {
+    var response, err;
+
+    before(function(done) {
+      function issue(client, deviceCode, done) {
+        return done(null, 'IGNORE');
+      }
+      
+      chai.connect.use(deviceCode(issue))
+        .req(function(req) {
+          req.user = { id: '459691054427', name: 'Example' };
+        })
+        .next(function(e) {
+          err = e;
+          done();
+        })
+        .dispatch();
+    });
+    
+    it('should error', function() {
+      expect(err).to.be.an.instanceOf(Error);
+      expect(err.message).to.equal('OAuth2orize requires body parsing. Did you forget to use body-parser middleware?');
+    });
+  }); // handling a request in which body has not been parsed
+  
+  describe('handling a request without device code parameter', function() {
+    var response, err;
+
+    before(function(done) {
+      function issue(client, deviceCode, done) {
+        return done(null, 'IGNORE');
+      }
+      
+      chai.connect.use(deviceCode(issue))
+        .req(function(req) {
+          req.user = { id: '459691054427', name: 'Example' };
+          req.body = {};
+        })
+        .next(function(e) {
+          err = e;
+          done();
+        })
+        .dispatch();
+    });
+    
+    it('should error', function() {
+      expect(err).to.be.an.instanceOf(Error);
+      expect(err.constructor.name).to.equal('TokenError');
+      expect(err.message).to.equal('Missing required parameter: device_code');
+      expect(err.code).to.equal('invalid_request');
+      expect(err.status).to.equal(400);
+    });
+  }); // handling a request without device code parameter
+  
+  describe('encountering an error while issuing an access token', function() {
+    var response, err;
+
+    before(function(done) {
+      function issue(client, deviceCode, done) {
+        return done(new Error('something is wrong'));
+      }
+      
+      chai.connect.use(deviceCode(issue))
+        .req(function(req) {
+          req.user = { id: '459691054427', name: 'Example' };
+          req.body = { device_code: 'GMMhmHCXhWEzkobqIHGG_EnNYYsAkukHspeYUk9E8' };
+        })
+        .next(function(e) {
+          err = e;
+          done();
+        })
+        .dispatch();
+    });
+    
+    it('should error', function() {
+      expect(err).to.be.an.instanceOf(Error);
+      expect(err.message).to.equal('something is wrong');
+    });
+  }); // encountering an error while issuing an access token
+  
+  describe('encountering an exception while issuing an access token', function() {
+    var response, err;
+
+    before(function(done) {
+      function issue(client, deviceCode, done) {
+        throw new Error('something is horribly wrong');
+      }
+      
+      chai.connect.use(deviceCode(issue))
+        .req(function(req) {
+          req.user = { id: '459691054427', name: 'Example' };
+          req.body = { device_code: 'GMMhmHCXhWEzkobqIHGG_EnNYYsAkukHspeYUk9E8' };
+        })
+        .next(function(e) {
+          err = e;
+          done();
+        })
+        .dispatch();
+    });
+    
+    it('should error', function() {
+      expect(err).to.be.an.instanceOf(Error);
+      expect(err.message).to.equal('something is horribly wrong');
+    });
+  }); // encountering an exception while issuing an access token
   
 })
 
