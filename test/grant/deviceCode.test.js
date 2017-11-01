@@ -23,7 +23,7 @@ describe('grant.device_code', function() {
     }).to.throw(TypeError, 'oauth2orize.device.activate grant requires an activate callback');
   });
 
-  describe('decision handling', function() {
+  describe('decision processing', function() {
     
     describe('activating device code', function() {
       var response;
@@ -196,12 +196,12 @@ describe('grant.device_code', function() {
       });
     }); // encountering an error while activating device code
 
-    describe('throwing an error while activating device code', function() {
+    describe('encountering an exception while issuing cross domain code', function() {
       var err;
       
       before(function(done) {
         function activate(deviceCode, done) {
-          throw new Error('something was thrown');
+          throw new Error('something went horribly wrong');
         }
         
         chai.oauth2orize.grant(deviceCode(activate))
@@ -223,32 +223,38 @@ describe('grant.device_code', function() {
       
       it('should error', function() {
         expect(err).to.be.an.instanceOf(Error);
-        expect(err.message).to.equal('something was thrown');
+        expect(err.message).to.equal('something went horribly wrong');
       });
-    });
-  });
+    }); // encountering an exception while issuing cross domain code
+  
+  }); // decision processing
 
   describe('error handling', function() {
     
-    describe('error on transaction', function() {
+    describe('generic error', function() {
       var response;
       
       before(function(done) {
-        function activate(deviceCode, done) {}
-        
-        function inform(txn, res, params) {
-          res.end('code: ' + params.error + ', message: ' + params.error_description);
+        function activate(client, deviceCode, user, done) {
+          return done(null);
         }
         
-        chai.oauth2orize.grant(deviceCode({ inform: inform }, activate))
+        chai.oauth2orize.grant(deviceCode(activate))
           .txn(function(txn) {
-            txn.client = { id: 'c123', name: 'Example' };
+            txn.client = { id: '1', name: 'OAuth Client' };
             txn.req = {
-              clientID:   'c123',
-              deviceCode: 'dc123'
+              scope: [ 'profile', 'tv' ]
             };
-            txn.user = { id: 'u123', name: 'Bob' };
+            txn.deviceCode = 'GMMhmHCXhWEzkobqIHGG_EnNYYsAkukHspeYUk9E8';
+            txn.user = { id: '501', name: 'John Doe' };
             txn.res = { allow: true };
+          })
+          .res(function(res) {
+            res.locals = {};
+            res.render = function(view) {
+              this.view = view;
+              this.end();
+            }
           })
           .end(function(res) {
             response = res;
@@ -257,37 +263,14 @@ describe('grant.device_code', function() {
           .error(new Error('something went wrong'));
       });
       
-      it('should respond', function() {
-        expect(response.body).to.equal('code: server_error, message: something went wrong');
+      it('should render', function() {
+        expect(response.statusCode).to.equal(200);
+        expect(response.view).to.equal('oauth2/device/error');
+        expect(response.locals.user).to.deep.equal({ id: '501', name: 'John Doe' });
+        expect(response.locals.client).to.deep.equal({ id: '1', name: 'OAuth Client' });
       });
-    });
+    }); // generic error
+    
+  }); // error handling
 
-    describe('error on transaction without inform callback', function() {
-      var passed;
-      
-      before(function(done) {
-        function activate(deviceCode, done) {}
-        
-        chai.oauth2orize.grant(deviceCode(activate))
-          .txn(function(txn) {
-            txn.client = { id: 'c123', name: 'Example' };
-            txn.req = {
-              clientID:   'c123',
-              deviceCode: 'dc123'
-            };
-            txn.user = { id: 'u123', name: 'Bob' };
-            txn.res = { allow: true };
-          })
-          .next(function(err, req, res, next) {
-            passed = true;
-            done();
-          })
-          .error(new Error('something went wrong'));
-      });
-      
-      it('should pass back up to the middleware processing', function() {
-        expect(passed).to.equal(true);
-      });
-    });
-  });
 });
