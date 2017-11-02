@@ -6,6 +6,15 @@
 [![Coverage](https://img.shields.io/coveralls/jaredhanson/oauth2orize-device-code.svg)](https://coveralls.io/r/jaredhanson/oauth2orize-device-code)
 [![Dependencies](https://img.shields.io/david/jaredhanson/oauth2orize-device-code.svg)](https://david-dm.org/jaredhanson/oauth2orize-device-code)
 
+
+[OAuth2orize](https://github.com/jaredhanson/oauth2orize) extensions providing
+support for [Device Flow for Browserless and Input Constrained Devices](https://tools.ietf.org/html/draft-ietf-oauth-device-flow-07).
+
+This flow allows devices which lack an easy input method (such as a smart TV,
+media console, picture frame, or printer) to request user authorization.
+Authorization will be performed on a secondary device, such as a desktop
+computer or smartphone, where a suitable input method and browser are available.
+
 ## Install
 
 ```bash
