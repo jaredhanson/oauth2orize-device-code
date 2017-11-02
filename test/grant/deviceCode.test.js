@@ -674,6 +674,138 @@ describe('grant.device_code', function() {
       });
     }); // authorization error
     
+    describe('with response mode', function() {
+      function activate(client, deviceCode, user, done) {
+        return done(null);
+      }
+      
+      var otherResponseMode = function(txn, res, params) {
+        expect(txn.locals.deviceCode).to.equal('GMMhmHCXhWEzkobqIHGG_EnNYYsAkukHspeYUk9E8');
+        res.locals.params = params;
+        res.render('other/activate');
+      }
+      
+      
+      describe('using default response mode', function() {
+        var response;
+      
+        before(function(done) {
+          chai.oauth2orize.grant(deviceCode({ modes: { other: otherResponseMode } }, activate))
+            .txn(function(txn) {
+              txn.client = { id: '1', name: 'OAuth Client' };
+              txn.req = {
+                scope: [ 'profile', 'tv' ]
+              };
+              txn.locals = {
+                deviceCode: 'GMMhmHCXhWEzkobqIHGG_EnNYYsAkukHspeYUk9E8'
+              };
+              txn.user = { id: '501', name: 'John Doe' };
+              txn.res = { allow: true };
+            })
+            .res(function(res) {
+              res.locals = {};
+              res.render = function(view) {
+                this.view = view;
+                this.end();
+              }
+            })
+            .end(function(res) {
+              response = res;
+              done();
+            })
+            .error(new AuthorizationError('not authorized', 'unauthorized_client'));
+        });
+      
+        it('should render', function() {
+          expect(response.statusCode).to.equal(200);
+          expect(response.view).to.equal('oauth2/device/error');
+          expect(response.locals.user).to.deep.equal({ id: '501', name: 'John Doe' });
+          expect(response.locals.client).to.deep.equal({ id: '1', name: 'OAuth Client' });
+          expect(response.locals.error).to.equal('unauthorized_client');
+          expect(response.locals.error_description).to.equal('not authorized');
+        });
+      }); // using default response mode
+      
+      describe('using other response mode', function() {
+        var response;
+      
+        before(function(done) {
+          chai.oauth2orize.grant(deviceCode({ modes: { other: otherResponseMode } }, activate))
+            .txn(function(txn) {
+              txn.client = { id: '1', name: 'OAuth Client' };
+              txn.req = {
+                responseMode: 'other',
+                scope: [ 'profile', 'tv' ]
+              };
+              txn.locals = {
+                deviceCode: 'GMMhmHCXhWEzkobqIHGG_EnNYYsAkukHspeYUk9E8'
+              };
+              txn.user = { id: '501', name: 'John Doe' };
+              txn.res = { allow: true };
+            })
+            .res(function(res) {
+              res.locals = {};
+              res.render = function(view) {
+                this.view = view;
+                this.end();
+              }
+            })
+            .end(function(res) {
+              response = res;
+              done();
+            })
+            .error(new AuthorizationError('not authorized', 'unauthorized_client'));
+        });
+      
+        it('should render', function() {
+          expect(response.statusCode).to.equal(200);
+          expect(response.view).to.equal('other/activate');
+          expect(response.locals.params).to.deep.equal({ error: 'unauthorized_client', error_description: 'not authorized' });
+        });
+      }); // using other response mode
+      
+      describe('using unsupported response mode', function() {
+        var response, err;
+      
+        before(function(done) {
+          chai.oauth2orize.grant(deviceCode({ modes: { other: otherResponseMode } }, activate))
+            .txn(function(txn) {
+              txn.client = { id: '1', name: 'OAuth Client' };
+              txn.req = {
+                responseMode: 'unsupported',
+                scope: [ 'profile', 'tv' ]
+              };
+              txn.locals = {
+                deviceCode: 'GMMhmHCXhWEzkobqIHGG_EnNYYsAkukHspeYUk9E8'
+              };
+              txn.user = { id: '501', name: 'John Doe' };
+              txn.res = { allow: true };
+            })
+            .res(function(res) {
+              res.locals = {};
+              res.render = function(view) {
+                this.view = view;
+                this.end();
+              }
+            })
+            .next(function(e) {
+              err = e;
+              done();
+            })
+            .error(new AuthorizationError('not authorized', 'unauthorized_client'));
+        });
+      
+        it('should error', function() {
+          expect(err).to.be.an.instanceOf(Error);
+          expect(err.constructor.name).to.equal('AuthorizationError');
+          expect(err.message).to.equal('not authorized');
+          expect(err.code).to.equal('unauthorized_client');
+          expect(err.status).to.equal(403);
+        });
+      }); // using unsupported response mode
+      
+    }); // with response mode
+    
   }); // error handling
 
 });
