@@ -43,7 +43,9 @@ describe('grant.device_code', function() {
             txn.req = {
               scope: [ 'profile', 'tv' ]
             };
-            txn.deviceCode = 'GMMhmHCXhWEzkobqIHGG_EnNYYsAkukHspeYUk9E8';
+            txn.locals = {
+              deviceCode: 'GMMhmHCXhWEzkobqIHGG_EnNYYsAkukHspeYUk9E8'
+            };
             txn.user = { id: '501', name: 'John Doe' };
             txn.res = { allow: true };
           })
@@ -88,7 +90,9 @@ describe('grant.device_code', function() {
             txn.req = {
               scope: [ 'profile', 'tv' ]
             };
-            txn.deviceCode = 'GMMhmHCXhWEzkobqIHGG_EnNYYsAkukHspeYUk9E8';
+            txn.locals = {
+              deviceCode: 'GMMhmHCXhWEzkobqIHGG_EnNYYsAkukHspeYUk9E8'
+            };
             txn.user = { id: '501', name: 'John Doe' };
             txn.res = { allow: true, scope: [ 'tv' ] };
           })
@@ -134,7 +138,9 @@ describe('grant.device_code', function() {
             txn.req = {
               scope: [ 'profile', 'tv' ]
             };
-            txn.deviceCode = 'GMMhmHCXhWEzkobqIHGG_EnNYYsAkukHspeYUk9E8';
+            txn.locals = {
+              deviceCode: 'GMMhmHCXhWEzkobqIHGG_EnNYYsAkukHspeYUk9E8'
+            };
             txn.user = { id: '501', name: 'John Doe' };
             txn.res = { allow: true, scope: [ 'tv' ] };
           })
@@ -181,10 +187,12 @@ describe('grant.device_code', function() {
             txn.req = {
               scope: [ 'profile', 'tv' ]
             };
-            txn.deviceCode = 'GMMhmHCXhWEzkobqIHGG_EnNYYsAkukHspeYUk9E8';
+            txn.locals = {
+              deviceCode: 'GMMhmHCXhWEzkobqIHGG_EnNYYsAkukHspeYUk9E8',
+              bar: 'baz'
+            };
             txn.user = { id: '501', name: 'John Doe' };
             txn.res = { allow: true, scope: [ 'tv' ] };
-            txn.locals = { bar: 'baz' };
           })
           .res(function(res) {
             res.locals = {};
@@ -226,7 +234,9 @@ describe('grant.device_code', function() {
             txn.req = {
               scope: [ 'profile', 'tv' ]
             };
-            txn.deviceCode = 'GMMhmHCXhWEzkobqIHGG_EnNYYsAkukHspeYUk9E8';
+            txn.locals = {
+              deviceCode: 'GMMhmHCXhWEzkobqIHGG_EnNYYsAkukHspeYUk9E8'
+            };
             txn.user = { id: '501', name: 'John Doe' };
             txn.res = { allow: true };
           })
@@ -273,7 +283,9 @@ describe('grant.device_code', function() {
             txn.req = {
               scope: [ 'profile', 'tv' ]
             };
-            txn.deviceCode = 'GMMhmHCXhWEzkobqIHGG_EnNYYsAkukHspeYUk9E8';
+            txn.locals = {
+              deviceCode: 'GMMhmHCXhWEzkobqIHGG_EnNYYsAkukHspeYUk9E8'
+            };
             txn.user = { id: '501', name: 'John Doe' };
             txn.res = { allow: false };
           })
@@ -313,7 +325,9 @@ describe('grant.device_code', function() {
             txn.req = {
               scope: [ 'profile', 'tv' ]
             };
-            txn.deviceCode = 'GMMhmHCXhWEzkobqIHGG_EnNYYsAkukHspeYUk9E8';
+            txn.locals = {
+              deviceCode: 'GMMhmHCXhWEzkobqIHGG_EnNYYsAkukHspeYUk9E8'
+            };
             txn.user = { id: '501', name: 'John Doe' };
             txn.res = { allow: true };
           })
@@ -345,6 +359,9 @@ describe('grant.device_code', function() {
               clientID:   'c123',
               deviceCode: 'dc123'
             };
+            txn.locals = {
+              deviceCode: 'GMMhmHCXhWEzkobqIHGG_EnNYYsAkukHspeYUk9E8'
+            };
             txn.user = { id: 'u123', name: 'Bob' };
             txn.res = { allow: true };
           })
@@ -375,7 +392,9 @@ describe('grant.device_code', function() {
             txn.req = {
               scope: [ 'profile', 'tv' ]
             };
-            txn.deviceCode = 'GMMhmHCXhWEzkobqIHGG_EnNYYsAkukHspeYUk9E8';
+            txn.locals = {
+              deviceCode: 'GMMhmHCXhWEzkobqIHGG_EnNYYsAkukHspeYUk9E8'
+            };
             txn.user = { id: '501', name: 'John Doe' };
             txn.res = { allow: true };
           })
@@ -400,7 +419,7 @@ describe('grant.device_code', function() {
       }
       
       var otherResponseMode = function(txn, res, params) {
-        expect(txn.deviceCode).to.equal('GMMhmHCXhWEzkobqIHGG_EnNYYsAkukHspeYUk9E8');
+        expect(txn.locals.deviceCode).to.equal('GMMhmHCXhWEzkobqIHGG_EnNYYsAkukHspeYUk9E8');
         res.locals.params = params;
         res.render('other/activate');
       }
@@ -416,7 +435,9 @@ describe('grant.device_code', function() {
               txn.req = {
                 scope: [ 'profile', 'tv' ]
               };
-              txn.deviceCode = 'GMMhmHCXhWEzkobqIHGG_EnNYYsAkukHspeYUk9E8';
+              txn.locals = {
+                deviceCode: 'GMMhmHCXhWEzkobqIHGG_EnNYYsAkukHspeYUk9E8'
+              };
               txn.user = { id: '501', name: 'John Doe' };
               txn.res = { allow: true };
             })
@@ -450,10 +471,12 @@ describe('grant.device_code', function() {
             .txn(function(txn) {
               txn.client = { id: '1', name: 'OAuth Client' };
               txn.req = {
+                responseMode: 'other',
                 scope: [ 'profile', 'tv' ]
               };
-              txn.deviceCode = 'GMMhmHCXhWEzkobqIHGG_EnNYYsAkukHspeYUk9E8';
-              txn.mode = 'other';
+              txn.locals = {
+                deviceCode: 'GMMhmHCXhWEzkobqIHGG_EnNYYsAkukHspeYUk9E8'
+              };
               txn.user = { id: '501', name: 'John Doe' };
               txn.res = { allow: true };
             })
@@ -486,10 +509,12 @@ describe('grant.device_code', function() {
             .txn(function(txn) {
               txn.client = { id: '1', name: 'OAuth Client' };
               txn.req = {
+                responseMode: 'other',
                 scope: [ 'profile', 'tv' ]
               };
-              txn.deviceCode = 'GMMhmHCXhWEzkobqIHGG_EnNYYsAkukHspeYUk9E8';
-              txn.mode = 'other';
+              txn.locals = {
+                deviceCode: 'GMMhmHCXhWEzkobqIHGG_EnNYYsAkukHspeYUk9E8'
+              };
               txn.user = { id: '501', name: 'John Doe' };
               txn.res = { allow: false };
             })
@@ -522,10 +547,12 @@ describe('grant.device_code', function() {
             .txn(function(txn) {
               txn.client = { id: '1', name: 'OAuth Client' };
               txn.req = {
+                responseMode: 'unsupported',
                 scope: [ 'profile', 'tv' ]
               };
-              txn.deviceCode = 'GMMhmHCXhWEzkobqIHGG_EnNYYsAkukHspeYUk9E8';
-              txn.mode = 'unsupported';
+              txn.locals = {
+                deviceCode: 'GMMhmHCXhWEzkobqIHGG_EnNYYsAkukHspeYUk9E8'
+              };
               txn.user = { id: '501', name: 'John Doe' };
               txn.res = { allow: true };
             })
@@ -573,7 +600,9 @@ describe('grant.device_code', function() {
             txn.req = {
               scope: [ 'profile', 'tv' ]
             };
-            txn.deviceCode = 'GMMhmHCXhWEzkobqIHGG_EnNYYsAkukHspeYUk9E8';
+            txn.locals = {
+              deviceCode: 'GMMhmHCXhWEzkobqIHGG_EnNYYsAkukHspeYUk9E8'
+            };
             txn.user = { id: '501', name: 'John Doe' };
             txn.res = { allow: true };
           })
