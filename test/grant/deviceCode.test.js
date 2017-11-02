@@ -625,8 +625,54 @@ describe('grant.device_code', function() {
         expect(response.view).to.equal('oauth2/device/error');
         expect(response.locals.user).to.deep.equal({ id: '501', name: 'John Doe' });
         expect(response.locals.client).to.deep.equal({ id: '1', name: 'OAuth Client' });
+        expect(response.locals.error).to.equal('server_error');
+        expect(response.locals.error_description).to.equal('something went wrong');
       });
     }); // generic error
+    
+    describe('authorization error', function() {
+      var response;
+      
+      before(function(done) {
+        function activate(client, deviceCode, user, done) {
+          return done(null);
+        }
+        
+        chai.oauth2orize.grant(deviceCode(activate))
+          .txn(function(txn) {
+            txn.client = { id: '1', name: 'OAuth Client' };
+            txn.req = {
+              scope: [ 'profile', 'tv' ]
+            };
+            txn.locals = {
+              deviceCode: 'GMMhmHCXhWEzkobqIHGG_EnNYYsAkukHspeYUk9E8'
+            };
+            txn.user = { id: '501', name: 'John Doe' };
+            txn.res = { allow: true };
+          })
+          .res(function(res) {
+            res.locals = {};
+            res.render = function(view) {
+              this.view = view;
+              this.end();
+            }
+          })
+          .end(function(res) {
+            response = res;
+            done();
+          })
+          .error(new AuthorizationError('not authorized', 'unauthorized_client'));
+      });
+      
+      it('should render', function() {
+        expect(response.statusCode).to.equal(200);
+        expect(response.view).to.equal('oauth2/device/error');
+        expect(response.locals.user).to.deep.equal({ id: '501', name: 'John Doe' });
+        expect(response.locals.client).to.deep.equal({ id: '1', name: 'OAuth Client' });
+        expect(response.locals.error).to.equal('unauthorized_client');
+        expect(response.locals.error_description).to.equal('not authorized');
+      });
+    }); // authorization error
     
   }); // error handling
 
