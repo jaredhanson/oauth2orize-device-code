@@ -401,6 +401,7 @@ describe('grant.device_code', function() {
       
       var otherResponseMode = function(txn, res, params) {
         expect(txn.deviceCode).to.equal('GMMhmHCXhWEzkobqIHGG_EnNYYsAkukHspeYUk9E8');
+        res.locals.params = params;
         res.render('other/activate');
       }
       
@@ -467,8 +468,41 @@ describe('grant.device_code', function() {
               response = res;
               done();
             })
-            .next(function(err) {
-              console.log(err);
+            .decide();
+        });
+      
+        it('should render', function() {
+          expect(response.statusCode).to.equal(200);
+          expect(response.view).to.equal('other/activate');
+          expect(response.locals.params).to.deep.equal({});
+        });
+      }); // activating device code using other response mode
+      
+      describe('authorization denied by user using other response mode', function() {
+        var response;
+      
+        before(function(done) {
+          chai.oauth2orize.grant(deviceCode({ modes: { other: otherResponseMode } }, activate))
+            .txn(function(txn) {
+              txn.client = { id: '1', name: 'OAuth Client' };
+              txn.req = {
+                scope: [ 'profile', 'tv' ]
+              };
+              txn.deviceCode = 'GMMhmHCXhWEzkobqIHGG_EnNYYsAkukHspeYUk9E8';
+              txn.mode = 'other';
+              txn.user = { id: '501', name: 'John Doe' };
+              txn.res = { allow: false };
+            })
+            .res(function(res) {
+              res.locals = {};
+              res.render = function(view) {
+                this.view = view;
+                this.end();
+              }
+            })
+            .end(function(res) {
+              response = res;
+              done();
             })
             .decide();
         });
@@ -476,8 +510,48 @@ describe('grant.device_code', function() {
         it('should render', function() {
           expect(response.statusCode).to.equal(200);
           expect(response.view).to.equal('other/activate');
+          expect(response.locals.params).to.deep.equal({ error: 'access_denied' });
         });
-      }); // activating device code using other response mode
+      }); // authorization denied by user using other response mode
+      
+      describe('using unsupported response mode', function() {
+        var response, err;
+      
+        before(function(done) {
+          chai.oauth2orize.grant(deviceCode({ modes: { other: otherResponseMode } }, activate))
+            .txn(function(txn) {
+              txn.client = { id: '1', name: 'OAuth Client' };
+              txn.req = {
+                scope: [ 'profile', 'tv' ]
+              };
+              txn.deviceCode = 'GMMhmHCXhWEzkobqIHGG_EnNYYsAkukHspeYUk9E8';
+              txn.mode = 'unsupported';
+              txn.user = { id: '501', name: 'John Doe' };
+              txn.res = { allow: true };
+            })
+            .res(function(res) {
+              res.locals = {};
+              res.render = function(view) {
+                this.view = view;
+                this.end();
+              }
+            })
+            .next(function(e) {
+              err = e;
+              done();
+            })
+            .decide();
+        });
+      
+        it('should error', function() {
+          expect(err).to.be.an.instanceOf(Error);
+          expect(err.constructor.name).to.equal('AuthorizationError');
+          expect(err.message).to.equal('Unsupported device response mode: unsupported');
+          expect(err.code).to.equal('unsupported_response_mode');
+          expect(err.uri).to.equal(null);
+          expect(err.status).to.equal(501);
+        });
+      }); // using unsupported response mode
       
     }); // with response mode
   
