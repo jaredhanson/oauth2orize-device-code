@@ -1,5 +1,5 @@
 var chai = require('chai')
-  , deviceAuthorizationRequest = require('../../lib/middleware/request');
+  , deviceAuthorizationRequest = require('../../lib/middleware/authorization');
 
 
 describe('middleware.request', function() {
