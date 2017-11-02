@@ -243,4 +243,159 @@ describe('middleware.request', function() {
     });
   });
   
+  describe('not issuing a device code', function() {
+    var response, err;
+
+    before(function(done) {
+      function issue(client, done) {
+        return done(null, false);
+      }
+      
+      chai.connect.use(deviceAuthorization({ verificationURI: 'http://www.example.com/device'}, issue))
+        .req(function(req) {
+          req.user = { id: '459691054427', name: 'Example' };
+          req.body = { scope: 'tv' };
+        })
+        .end(function(res) {
+          response = res;
+          done();
+        })
+        .next(function(e) {
+          err = e;
+          done();
+        })
+        .dispatch();
+    });
+    
+    it('should error', function() {
+      expect(err).to.be.an.instanceOf(Error);
+      expect(err.constructor.name).to.equal('AuthorizationError');
+      expect(err.message).to.equal('Request denied by authorization server');
+      expect(err.code).to.equal('access_denied');
+      expect(err.status).to.equal(403);
+    });
+  });
+  
+  describe('encountering an error while issuing a device code', function() {
+    var response, err;
+
+    before(function(done) {
+      function issue(client, done) {
+        return done(new Error('something is wrong'));
+      }
+      
+      chai.connect.use(deviceAuthorization({ verificationURI: 'http://www.example.com/device'}, issue))
+        .req(function(req) {
+          req.user = { id: '459691054427', name: 'Example' };
+          req.body = { scope: 'tv' };
+        })
+        .end(function(res) {
+          response = res;
+          done();
+        })
+        .next(function(e) {
+          err = e;
+          done();
+        })
+        .dispatch();
+    });
+    
+    it('should error', function() {
+      expect(err).to.be.an.instanceOf(Error);
+      expect(err.message).to.equal('something is wrong');
+    });
+  });
+  
+  describe('encountering an exception while issuing a device code', function() {
+    var response, err;
+
+    before(function(done) {
+      function issue(client, done) {
+        throw new Error('something is horribly wrong')
+      }
+      
+      chai.connect.use(deviceAuthorization({ verificationURI: 'http://www.example.com/device'}, issue))
+        .req(function(req) {
+          req.user = { id: '459691054427', name: 'Example' };
+          req.body = { scope: 'tv' };
+        })
+        .end(function(res) {
+          response = res;
+          done();
+        })
+        .next(function(e) {
+          err = e;
+          done();
+        })
+        .dispatch();
+    });
+    
+    it('should error', function() {
+      expect(err).to.be.an.instanceOf(Error);
+      expect(err.message).to.equal('something is horribly wrong');
+    });
+  });
+  
+  describe('handling a request without a body', function() {
+    var response, err;
+
+    before(function(done) {
+      function issue(client, done) {
+        return done(null, 'IGNORE', 'IGNORE');
+      }
+      
+      chai.connect.use(deviceAuthorization({ verificationURI: 'http://www.example.com/device'}, issue))
+        .req(function(req) {
+          req.user = { id: '459691054427', name: 'Example' };
+        })
+        .end(function(res) {
+          response = res;
+          done();
+        })
+        .next(function(e) {
+          err = e;
+          done();
+        })
+        .dispatch();
+    });
+    
+    it('should error', function() {
+      expect(err).to.be.an.instanceOf(Error);
+      expect(err.message).to.equal('OAuth2orize requires body parsing. Did you forget to use body-parser middleware?');
+    });
+  });
+  
+  describe('handling a request without a body', function() {
+    var response, err;
+
+    before(function(done) {
+      function issue(client, done) {
+        return done(null, 'IGNORE', 'IGNORE');
+      }
+      
+      chai.connect.use(deviceAuthorization({ verificationURI: 'http://www.example.com/device'}, issue))
+        .req(function(req) {
+          req.user = { id: '459691054427', name: 'Example' };
+          req.body = { scope: ['read', 'write'] };
+        })
+        .end(function(res) {
+          response = res;
+          done();
+        })
+        .next(function(e) {
+          err = e;
+          done();
+        })
+        .dispatch();
+    });
+    
+    it('should error', function () {
+      expect(err).to.be.an.instanceOf(Error);
+      expect(err.name).to.equal('AuthorizationError');
+      expect(err.message).to.equal('Invalid parameter: scope must be a string');
+      expect(err.code).to.equal('invalid_request');
+      expect(err.status).to.equal(400);
+    });
+  });
+  
 });
