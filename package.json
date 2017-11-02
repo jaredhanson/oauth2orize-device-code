@@ -13,6 +13,12 @@
     "email": "jaredhanson@gmail.com",
     "url": "http://www.jaredhanson.net/"
   },
+  "contributors": [
+    {
+      "name": "Samuel Judson",
+      "url": "https://www.sjudson.com/"
+    }
+  ],
   "repository": {
     "type": "git",
     "url": "git://github.com/jaredhanson/oauth2orize-device-code.git"
@@ -29,14 +35,14 @@
   ],
   "main": "./lib",
   "dependencies": {
-    "chai-oauth2orize-grant": "^0.3.0",
     "utils-merge": "^1.0.0"
   },
   "devDependencies": {
     "make-node": "^0.3.0",
     "mocha": "^2.0.0",
     "chai": "^3.0.0",
-    "chai-connect-middleware": "^0.3.1"
+    "chai-connect-middleware": "^0.3.1",
+    "chai-oauth2orize-grant": "^0.3.0"
   },
   "scripts": {
     "test": "node_modules/.bin/mocha test/*.test.js"
