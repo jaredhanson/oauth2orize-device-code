@@ -365,7 +365,7 @@ describe('middleware.request', function() {
     });
   });
   
-  describe('handling a request without a body', function() {
+  describe('handling a request where scope format is not string', function() {
     var response, err;
 
     before(function(done) {
@@ -397,5 +397,173 @@ describe('middleware.request', function() {
       expect(err.status).to.equal(400);
     });
   });
+  
+  describe('with scope separator option', function() {
+    
+    describe('issuing a device code based on array of scopes', function() {
+      var response, err;
+
+      before(function(done) {
+        function issue(client, scope, done) {
+          if (client.id !== '459691054427') { return done(new Error('incorrect client argument')); }
+          if (scope.length !== 2) { return done(new Error('incorrect scope argument')); }
+          if (scope[0] !== 'profile') { return done(new Error('incorrect scope argument')); }
+          if (scope[1] !== 'tv') { return done(new Error('incorrect scope argument')); }
+          return done(null, 'GMMhmHCXhWEzkobqIHGG_EnNYYsAkukHspeYUk9E8', 'WDJB-MJHT');
+        }
+      
+        chai.connect.use(deviceAuthorization({ scopeSeparator: ',', verificationURI: 'http://www.example.com/device'}, issue))
+          .req(function(req) {
+            req.user = { id: '459691054427', name: 'Example' };
+            req.body = { scope: 'profile,tv' };
+          })
+          .end(function(res) {
+            response = res;
+            done();
+          })
+          .next(function(err) {
+            console.log(err);
+            console.log(err.stack);
+            throw err;
+          })
+          .dispatch();
+      });
+    
+      it('should respond with headers', function() {
+        expect(response.getHeader('Content-Type')).to.equal('application/json');
+        expect(response.getHeader('Cache-Control')).to.equal('no-store');
+      });
+    
+      it('should respond with body', function() {
+        expect(response.body).to.equal('{"device_code":"GMMhmHCXhWEzkobqIHGG_EnNYYsAkukHspeYUk9E8","user_code":"WDJB-MJHT","verification_uri":"http://www.example.com/device"}');
+      });
+    });
+    
+  }); // with scope separator option
+  
+  describe('with multiple scope separator option', function() {
+    
+    describe('issuing a device code based on array of scopes separated by space', function() {
+      var response, err;
+
+      before(function(done) {
+        function issue(client, scope, done) {
+          if (client.id !== '459691054427') { return done(new Error('incorrect client argument')); }
+          if (scope.length !== 2) { return done(new Error('incorrect scope argument')); }
+          if (scope[0] !== 'profile') { return done(new Error('incorrect scope argument')); }
+          if (scope[1] !== 'tv') { return done(new Error('incorrect scope argument')); }
+          return done(null, 'GMMhmHCXhWEzkobqIHGG_EnNYYsAkukHspeYUk9E8', 'WDJB-MJHT');
+        }
+      
+        chai.connect.use(deviceAuthorization({ scopeSeparator: [' ', ','], verificationURI: 'http://www.example.com/device'}, issue))
+          .req(function(req) {
+            req.user = { id: '459691054427', name: 'Example' };
+            req.body = { scope: 'profile tv' };
+          })
+          .end(function(res) {
+            response = res;
+            done();
+          })
+          .next(function(err) {
+            console.log(err);
+            console.log(err.stack);
+            throw err;
+          })
+          .dispatch();
+      });
+    
+      it('should respond with headers', function() {
+        expect(response.getHeader('Content-Type')).to.equal('application/json');
+        expect(response.getHeader('Cache-Control')).to.equal('no-store');
+      });
+    
+      it('should respond with body', function() {
+        expect(response.body).to.equal('{"device_code":"GMMhmHCXhWEzkobqIHGG_EnNYYsAkukHspeYUk9E8","user_code":"WDJB-MJHT","verification_uri":"http://www.example.com/device"}');
+      });
+    });
+    
+    describe('issuing a device code based on array of scopes separated by comma', function() {
+      var response, err;
+
+      before(function(done) {
+        function issue(client, scope, done) {
+          if (client.id !== '459691054427') { return done(new Error('incorrect client argument')); }
+          if (scope.length !== 2) { return done(new Error('incorrect scope argument')); }
+          if (scope[0] !== 'profile') { return done(new Error('incorrect scope argument')); }
+          if (scope[1] !== 'tv') { return done(new Error('incorrect scope argument')); }
+          return done(null, 'GMMhmHCXhWEzkobqIHGG_EnNYYsAkukHspeYUk9E8', 'WDJB-MJHT');
+        }
+      
+        chai.connect.use(deviceAuthorization({ scopeSeparator: [' ', ','], verificationURI: 'http://www.example.com/device'}, issue))
+          .req(function(req) {
+            req.user = { id: '459691054427', name: 'Example' };
+            req.body = { scope: 'profile,tv' };
+          })
+          .end(function(res) {
+            response = res;
+            done();
+          })
+          .next(function(err) {
+            console.log(err);
+            console.log(err.stack);
+            throw err;
+          })
+          .dispatch();
+      });
+    
+      it('should respond with headers', function() {
+        expect(response.getHeader('Content-Type')).to.equal('application/json');
+        expect(response.getHeader('Cache-Control')).to.equal('no-store');
+      });
+    
+      it('should respond with body', function() {
+        expect(response.body).to.equal('{"device_code":"GMMhmHCXhWEzkobqIHGG_EnNYYsAkukHspeYUk9E8","user_code":"WDJB-MJHT","verification_uri":"http://www.example.com/device"}');
+      });
+    });
+    
+  }); // with multiple scope separator option
+  
+  describe('with user property option', function() {
+    
+    describe('issuing a device code based on array of scopes', function() {
+      var response, err;
+
+      before(function(done) {
+        function issue(client, scope, done) {
+          if (client.id !== '459691054427') { return done(new Error('incorrect client argument')); }
+          if (scope.length !== 2) { return done(new Error('incorrect scope argument')); }
+          if (scope[0] !== 'profile') { return done(new Error('incorrect scope argument')); }
+          if (scope[1] !== 'tv') { return done(new Error('incorrect scope argument')); }
+          return done(null, 'GMMhmHCXhWEzkobqIHGG_EnNYYsAkukHspeYUk9E8', 'WDJB-MJHT');
+        }
+      
+        chai.connect.use(deviceAuthorization({ userProperty: 'client', verificationURI: 'http://www.example.com/device'}, issue))
+          .req(function(req) {
+            req.client = { id: '459691054427', name: 'Example' };
+            req.body = { scope: 'profile tv' };
+          })
+          .end(function(res) {
+            response = res;
+            done();
+          })
+          .next(function(err) {
+            console.log(err);
+            console.log(err.stack);
+            throw err;
+          })
+          .dispatch();
+      });
+    
+      it('should respond with headers', function() {
+        expect(response.getHeader('Content-Type')).to.equal('application/json');
+        expect(response.getHeader('Cache-Control')).to.equal('no-store');
+      });
+    
+      it('should respond with body', function() {
+        expect(response.body).to.equal('{"device_code":"GMMhmHCXhWEzkobqIHGG_EnNYYsAkukHspeYUk9E8","user_code":"WDJB-MJHT","verification_uri":"http://www.example.com/device"}');
+      });
+    });
+    
+  }); // with user property option
   
 });
