@@ -8,12 +8,6 @@ media console, picture frame, or printer) to request user authorization.
 Authorization will be performed on a secondary device, such as a desktop
 computer or smartphone, where a suitable input method and browser are available.
 
----
-
-<p align="center"><a href="//pluralsight.pxf.io/c/1312135/448522/7490">Start a 10-day free trial at Pluralsight - Over 5,000 Courses Available</a></p>
-
----
-
 Status:
 [![Version](https://img.shields.io/npm/v/oauth2orize-device-code.svg?label=version)](https://www.npmjs.com/package/oauth2orize-device-code)
 [![Build](https://img.shields.io/travis/jaredhanson/oauth2orize-device-code.svg)](https://travis-ci.org/jaredhanson/oauth2orize-device-code)
